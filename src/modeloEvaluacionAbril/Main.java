@@ -22,13 +22,13 @@ public class Main {
 		//System.out.println("DEBUG: Initialization finished");
 	}
 	
-	public static void showMenu(String[] options) {
+	public static void showMenu(String[] options) { // 2. mostrarMenu
 		System.out.println("==========*==========*==========*==========");
 		enumerate(options);
 		System.out.println("==========*==========*==========*==========");
 	}
 	
-	public static void generateAction(int option) {
+	public static void generateAction(int option) { // 3. generarAccion
 		// Lo hago sin switch porque no lo vimos todavía y entiendo que la idea es practicar esto primero.
 		System.out.println("DEBUG: Selected option: " + option);
 	}
