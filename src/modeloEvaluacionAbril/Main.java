@@ -12,7 +12,7 @@ public class Main {
 		initMatrix(seats);
 		showMenu(OPTIONS);
 		int selectedOption = getParsedInt(s, MIN_OPTION, MAX_OPTION); // Obtener entero "analizado", estamos seguros que es correcto.
-		generateAction(selectedOption, seats);
+		generateAction(s, selectedOption, seats);
 		
 		s.close();
 	}
@@ -32,13 +32,15 @@ public class Main {
 		System.out.println("==========*==========*==========*==========");
 	}
 	
-	public static void generateAction(int option, int[][] seats) { // 3. generarAccion
+	public static void generateAction(Scanner s, int option, int[][] seats) { // 3. generarAccion
+		final String[] ROWS_LETTERS = {"A", "B", "C", "D", "E", "F", "G", "H", "I", "J"};
+		final String[] COLUMNS = {"1", "2", "3", "4", "5", "6"}; // Nota: podria utilizar directamente i + 1 para mostrarlos pero para mayor legibilidad voy a hacerlo así.
 		switch (option) {
 		case 1:
-			showSeats(seats); 
+			showSeats(seats, ROWS_LETTERS, COLUMNS); 
 			break;
 		case 2:
-			//reserveSeat(seats); // 5. reservarAsiento
+			reserveSeat(s, seats, ROWS_LETTERS, COLUMNS); // 5. reservarAsiento
 			break;
 		case 3:
 			//cancelReservation(seats); // 6. cancelarReserva
@@ -49,9 +51,8 @@ public class Main {
 		}
 	}
 	
-	public static void showSeats(int seats[][]) { // 4. mostrarAsientos
-		final String[] ROWS_LETTERS = {"A", "B", "C", "D", "E", "F", "G", "H", "I", "J"};
-		final String[] COLUMNS = {"1", "2", "3", "4", "5", "6"}; // Nota: podria utilizar directamente i + 1 para mostrarlos pero para mayor legibilidad voy a hacerlo así.
+	public static void showSeats(int seats[][], final String[] ROWS_LETTERS, final String[] COLUMNS) { // 4. mostrarAsientos
+		
 		final int HALLWAY_PER_SEATS = 3;
 		System.out.print("  ");
 		for (int columnIndex = 0; columnIndex < COLUMNS.length; columnIndex++) {
@@ -70,9 +71,9 @@ public class Main {
 				
 				int seat = seats[rowLetterIndex][seatIndex];
 				String seatAvailable = null;
-				if (seat == 1) {
+				if (seat == 2) {
 					seatAvailable = "x";
-				} else if (seat == 2) {
+				} else if (seat == 1) {
 					seatAvailable = "-";
 				}
 				
@@ -86,7 +87,40 @@ public class Main {
 			System.out.print("\n");
 		}
 	}
+
+	public static void reserveSeat(Scanner s, int seats[][], final String[] ROWS_LETTERS, final String[] COLUMNS) {
+		final int MIN_COLUMN = 0;
+		final int MAX_COLUMN = 6;
+		int columnNumber = 0;
+		String rowLetter = "";
+		System.out.println("Seleccioná el número de columna de tu asiento (1-6):");
+		columnNumber = getParsedInt(s, MIN_COLUMN, MAX_COLUMN);
+		System.out.println("Seleccioná la letra de la fila de tu asiento (A-J):");
+		rowLetter = getParsedLetter(s, ROWS_LETTERS);
+		
+	}
 	
+	private static String getParsedLetter(Scanner s, String[] ROWS_LETTERS) {
+		boolean isValid = false;
+
+		String letter = "";
+		do {
+			isValid = false;
+			letter = s.nextLine();
+			
+			for (int rowLetterIndex = 0; rowLetterIndex < ROWS_LETTERS.length; rowLetterIndex++) {
+				if (ROWS_LETTERS[rowLetterIndex] == letter) {
+					isValid = true;
+				}
+			}
+			System.out.println("Error: El valor ingresado es incorrecto. Por favor, ingrese una de las siguientes letras:\n");
+			showStringArrayValues(ROWS_LETTERS);
+		}
+		while(!isValid); // Segui repitiendo mientras no sea valido
+		
+		return letter;
+	}
+
 	public static int getParsedInt(Scanner s, int min, int max) {
 		// Necesito un do while porque hasta que el usuario no ingrese el dato del modo correcto, hay que continuar pidiéndolo.
 		
@@ -129,6 +163,12 @@ public class Main {
 	public static void enumerate(String[] lines) {
 		for (int lineNum = 0; lineNum < lines.length; lineNum++) {
 			System.out.println((lineNum + 1) + ". " + lines[lineNum]);
+		}
+	}
+	
+	public static void showStringArrayValues(String[] array) {
+		for (int i = 0; i < array.length; i++) {
+			System.out.print(array[i] + ", ");
 		}
 	}
 }
