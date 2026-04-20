@@ -21,7 +21,7 @@ siguiente menú:
 3. Cancelar reserva
 4. Salir
 Cuando se muestran los asientos se deberá crear una pantalla similar a la siguiente:
-
+```
   1 2 3   4 5 6  
 A x - -   x - - A
 B - - -   x x - B
@@ -33,7 +33,7 @@ G - - x   - x x G
 H - - x   x x x H
 I x - -   - x - I
 J - - -   x - - J 
-
+```
 Métodos a utilizar:
 1. inicializarMatriz: Mediante este método se deben inicializar la matriz entera en 1 (1 significa ocupado y
 2 significa desocupado).
