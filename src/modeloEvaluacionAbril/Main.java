@@ -5,50 +5,57 @@ import java.util.Scanner;
 public class Main {
 	public static void main(String[] args) {
 		final String[] OPTIONS = new String[] {"Mostrar asientos", "Reservar asiento", "Cancelar reserva", "Salir"};
-		final int MIN_OPTION = 1;
-		final int MAX_OPTION = OPTIONS.length;
+		boolean exit = false;
 		int[][] seats = new int[10][6]; // 10 rows, 6 columns
 		Scanner s = new Scanner(System.in);
 		initMatrix(seats);
-		showMenu(OPTIONS);
-		int selectedOption = getParsedInt(s, MIN_OPTION, MAX_OPTION); // Obtener entero "analizado", estamos seguros que es correcto.
-		generateAction(s, selectedOption, seats);
 		
+		do {
+		int selectedOption = showMenuAndReturnSelection(s, OPTIONS);
+		exit = generateAction(s, selectedOption, seats);
+		}
+		while (!exit);
+		System.out.println("Saliendo del programa...");
 		s.close();
 	}
 	
 	public static void initMatrix(int[][] seats) { // 1. inicializarMatriz
 		for(int r = 0; r < seats.length; r++) { // r: row
 			for(int c = 0; c < seats[r].length; c++) {
-				seats[r][c] = 1; // 1: occupied, 2: free
+				seats[r][c] = 1; // 1: free, 2: occupied
 			}
 		}
 		//System.out.println("DEBUG: Initialization finished");
 	}
 	
-	public static void showMenu(String[] options) { // 2. mostrarMenu
+	public static int showMenuAndReturnSelection(Scanner s, final String[] OPTIONS) { // 2. mostrarMenu (y devolver seleccion)
+		final int MIN_OPTION = 1;
+		final int MAX_OPTION = OPTIONS.length;
 		System.out.println("==========*==========*==========*==========");
-		enumerate(options);
+		enumerate(OPTIONS);
 		System.out.println("==========*==========*==========*==========");
+		return getParsedInt(s, MIN_OPTION, MAX_OPTION); // Obtener entero "analizado", estamos seguros de que es correcto.
 	}
 	
-	public static void generateAction(Scanner s, int option, int[][] seats) { // 3. generarAccion
+	public static boolean generateAction(Scanner s, int option, int[][] seats) { // 3. generarAccion
 		final String[] ROWS_LETTERS = {"A", "B", "C", "D", "E", "F", "G", "H", "I", "J"};
 		final String[] COLUMNS = {"1", "2", "3", "4", "5", "6"}; // Nota: podria utilizar directamente i + 1 para mostrarlos pero para mayor legibilidad voy a hacerlo así.
+		boolean exit = false;
 		switch (option) {
 		case 1:
 			showSeats(seats, ROWS_LETTERS, COLUMNS); 
 			break;
 		case 2:
-			reserveSeat(s, seats, ROWS_LETTERS, COLUMNS); // 5. reservarAsiento
+			reserveSeat(s, seats, ROWS_LETTERS);
 			break;
 		case 3:
-			//cancelReservation(seats); // 6. cancelarReserva
+			cancelReservedSeat(s, seats, ROWS_LETTERS);
 			break;
 		case 4:
-			//exit();
-			break;
+			exit = true;
 		}
+		return exit;
+		
 	}
 	
 	public static void showSeats(int seats[][], final String[] ROWS_LETTERS, final String[] COLUMNS) { // 4. mostrarAsientos
@@ -86,21 +93,59 @@ public class Main {
 			System.out.print(ROWS_LETTERS[rowLetterIndex]);
 			System.out.print("\n");
 		}
+		
+		System.out.println("");
 	}
-
-	public static void reserveSeat(Scanner s, int seats[][], final String[] ROWS_LETTERS, final String[] COLUMNS) {
-		final int MIN_COLUMN = 0;
+	
+	public static int[] selectSeat(Scanner s, int seats[][], final String[] ROWS_LETTERS) {
+		final int MIN_COLUMN = 1;
 		final int MAX_COLUMN = 6;
-		int columnNumber = 0;
-		String rowLetter = "";
+		int columnNumber = -1;
+		int rowLetterIndex = -1;
 		System.out.println("Seleccioná el número de columna de tu asiento (1-6):");
 		columnNumber = getParsedInt(s, MIN_COLUMN, MAX_COLUMN);
 		System.out.println("Seleccioná la letra de la fila de tu asiento (A-J):");
-		rowLetter = getParsedLetter(s, ROWS_LETTERS);
+		rowLetterIndex = getParsedLetterIndex(s, ROWS_LETTERS);
+		return new int[] {rowLetterIndex, columnNumber};
+	}
+	
+	public static boolean isReserved(int seats[][], int rowIndex, int columnIndex) {
+		return seats[rowIndex][columnIndex] == 2;
+	}
+	
+	public static void reserveSeat(Scanner s, int seats[][], final String[] ROWS_LETTERS) { // 5. reservarAsiento
+		
+		int[] seatPosition = selectSeat(s, seats, ROWS_LETTERS);
+		int rowIndex = seatPosition[0];
+		int columnIndex = seatPosition[1] - 1; // -1 porque el usuario ingresa entre 1 y 6 pero los índices del array están entre 0 y 5.
+		if (isReserved(seats, rowIndex, columnIndex)) {
+			System.out.println("Lamentablemente ese asiento ya está reservado. Si desea reservar otro vuelva a ingresar la opción en el menú. Muchas gracias.");
+		}
+		else {
+			seats[rowIndex][columnIndex] = 2;
+			System.out.println("Su asiento fue reservado. Ingrese la opción 1 en el menu para visualizarlo.");
+		}
+		System.out.println("");
 		
 	}
 	
-	private static String getParsedLetter(Scanner s, String[] ROWS_LETTERS) {
+	public static void cancelReservedSeat(Scanner s, int seats[][], final String[] ROWS_LETTERS) { // 6. cancelarReserva
+		// Nota: Esta función es redundante, pero existe porque el enunciado pide dos funciones diferentes para hacer y para cancelar la reserva.
+		int[] seatPosition = selectSeat(s, seats, ROWS_LETTERS);
+		int rowIndex = seatPosition[0];
+		int columnIndex = seatPosition[1] - 1;
+		if (isReserved(seats, rowIndex, columnIndex)) {
+			seats[rowIndex][columnIndex] = 1;
+			System.out.println("La reserva fue cancelada. Ingrese la opción 1 en el menu para visualizarlo.");
+		}
+		else {
+			System.out.println("El asiento ingresado no se encuentra reservado. Para volver a intentarlo ingrese nuevamente la opción en el menú.");
+		}
+		System.out.println("");
+	}
+	
+	private static int getParsedLetterIndex(Scanner s, String[] ROWS_LETTERS) {
+		int letterIndex = -1;
 		boolean isValid = false;
 
 		String letter = "";
@@ -109,16 +154,20 @@ public class Main {
 			letter = s.nextLine();
 			
 			for (int rowLetterIndex = 0; rowLetterIndex < ROWS_LETTERS.length; rowLetterIndex++) {
-				if (ROWS_LETTERS[rowLetterIndex] == letter) {
+				if (ROWS_LETTERS[rowLetterIndex].equals(letter)) {
 					isValid = true;
+					letterIndex = rowLetterIndex;
 				}
 			}
+			
+			if (!isValid) {
 			System.out.println("Error: El valor ingresado es incorrecto. Por favor, ingrese una de las siguientes letras:\n");
 			showStringArrayValues(ROWS_LETTERS);
+			}
 		}
 		while(!isValid); // Segui repitiendo mientras no sea valido
 		
-		return letter;
+		return letterIndex;
 	}
 
 	public static int getParsedInt(Scanner s, int min, int max) {
@@ -141,12 +190,12 @@ public class Main {
 				// Por ejemplo si escribo "hola<enter>" el buffer almacena "hola\n"
 				System.out.println("Error: El valor ingresado es incorrecto.");
 				errorExists = true;
+			}
+			finally { // Siempre, se ejecuta. Incluso si hay un return en try o catch.
 				s.nextLine(); // Mueve el marcador de posición del buffer al índice del primer caracter después de \n
 				// como despues de "hola\n" no hay nada (hay un espacio libre), decimos que el buffer "queda limpio"
 				// pero en realidad nos estamos posicionando en un lugar libre para llenarlo con la siguiente entrada
 				// el "hola\n" anterior sigue en el buffer, solo que ya no lo leemos.
-			}
-			finally { // Siempre, se ejecuta. Incluso si hay un return en try o catch.
 				if(errorExists) {
 					System.out.println("Por favor, ingrese un número entero entre " + min + " y " + max);					
 				}
